@@ -38,6 +38,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Linking|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -47,22 +48,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Official|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Alpha|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Alpha|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Official|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -818,7 +824,6 @@ echo Environment variable Q2DIR not set...
     <ClCompile Include="kots_motd.c" />
     <ClCompile Include="kots_mute.c" />
     <ClCompile Include="kots_mysql_helper.c" />
-    <ClCompile Include="kots_official.c" />
     <ClCompile Include="kots_pickups.c" />
     <ClCompile Include="kots_player.c" />
     <ClCompile Include="kots_power.c" />
@@ -1368,7 +1373,6 @@ echo Environment variable Q2DIR not set...
     <ClInclude Include="kots_motd.h" />
     <ClInclude Include="kots_mute.h" />
     <ClInclude Include="kots_mysql_helper.h" />
-    <ClInclude Include="kots_official.h" />
     <ClInclude Include="kots_pickups.h" />
     <ClInclude Include="kots_player.h" />
     <ClInclude Include="kots_power.h" />

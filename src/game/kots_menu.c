@@ -9,7 +9,7 @@ char *Kots_GetStatString(int base, int current);
 
 #define KotsMenuCount 18
 pmenu_t kotsmenu[KotsMenuCount] = {
-    { "*-= KOTS2007 Menu =-",   PMENU_ALIGN_CENTER, NULL },
+    { "*-= KOTS2020 QuakeChile.CL Menu =-",   PMENU_ALIGN_CENTER, NULL },
     { "Join game",              PMENU_ALIGN_LEFT, Kots_StartGame },
     { "Create character",       PMENU_ALIGN_LEFT, Kots_Create },
     { "Switch to observer",     PMENU_ALIGN_LEFT, Kots_Observer },
@@ -238,7 +238,7 @@ pmenu_t vote_menu[KotsMenuCount] = {
 };
 
 pmenu_t servers_menu[KotsMenuCount] = {
-    { "*-= KOTS2007 Servers =-",    PMENU_ALIGN_CENTER, NULL },
+    { "*-= KOTS2020 QuakeChile.CL Servers =-",    PMENU_ALIGN_CENTER, NULL },
     { NULL,                         PMENU_ALIGN_LEFT, NULL },
     { NULL,                         PMENU_ALIGN_LEFT, NULL },
     { NULL,                         PMENU_ALIGN_LEFT, NULL },
