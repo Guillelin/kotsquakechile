@@ -558,12 +558,11 @@ ALTER TABLE `mutelist`
 
 --
 -- Procedures
+-- 2024-09-23 Modified by Guillermo Díaz L (Tesla)
 --
 DELIMITER $$
---
-$$
 
-CREATE PROCEDURE `AdminLogin`(
+CREATE OR REPLACE PROCEDURE `AdminLogin`(
         name varchar(45),
         pass varchar(45),
         ip_address varchar(15),
@@ -574,84 +573,43 @@ BEGIN
         declare realpass varchar(45);
         declare id int;
         declare isadmin tinyint;
-        
+
         /* NOTE: See kots_server.h for list of return values */
         /* TODO: Possibly add an admins table that this uses instead of characters... */
-        
+
         /* Default the return value to everything ok */
         set return_val = 0;
-        
+
         /* Get the character id and real password */
         select a.id, a.pass, a.isadmin into id, realpass, isadmin
         from characters a where a.name = name limit 1;
 
-    /* Check if the character was found */
+                /* Check if the character was found */
         if id is null
         then
-        
-        /* Not found */
+
+                                /* Not found */
                 set return_val = 2;
-                
+
         elseif (isadmin <> 1)
         then
-        
-        /* Not an admin */
-        set return_val = 7;
-                
+
+                                /* Not an admin */
+                                set return_val = 7;
+
         elseif (realpass <> MD5(pass))
         then
-        
-        /* Incorrect password */
-        set return_val = 3;
-                
+
+                                /* Incorrect password */
+                                set return_val = 3;
+
                 /* TODO: Possibly add some logging in here */
         end if;
 
-END
-
+END 
 $$
-CREATE PROCEDURE `UpdateServer3`(
-        name varchar(128),
-        port int(4),
-        max_players int(4),
-        cur_players int(4),
-        map varchar(64),
-        is_public tinyint
-)
-BEGIN
 
-  declare id int;
-  declare hostname varchar(256);
-  declare username varchar(128);
-
-  /* get ip address and server id if one exists */
-  select substr(user(), instr(user(), '@') + 1) into hostname;
-  select substr(user(), 1, instr(user(), '@') - 1) into username;
-  select a.id from `servers` a where a.hostname = hostname and a.port = port into id;
-  
-  if id is null
-    then
-    
-            insert into `servers` (name, port, max_players, cur_players, map, username, last_updated, is_public, hostname)
-            values (name, port, max_players, cur_players, map, username, NOW(), is_public, hostname);
-            
-    else
-            
-            update  `servers`
-            set   servers.name = name,
-          servers.max_players = max_players,
-          servers.cur_players = cur_players,
-          servers.map = map,
-          servers.username = username,
-          servers.is_public = is_public,
-          servers.last_updated = NOW()
-      where servers.id = id;
-            
-    end if;
-  
-END
-$$
-CREATE PROCEDURE `BanIp`(
+CREATE OR REPLACE PROCEDURE `BanIp`(
         ip_address varchar(15),
         description varchar(512)
 )
@@ -664,15 +622,15 @@ BEGIN
 
         if id is null
         then
-                insert into   ipbans
-                (ip_address, date, description)
-        values      (ip_address, NOW(), description);
+                insert into             ipbans
+                                                                (ip_address, date, description)
+                                values                  (ip_address, NOW(), description);
         end if;
 
 END
-
 $$
-CREATE PROCEDURE `CreateCharacter2`(
+
+CREATE OR REPLACE PROCEDURE `CreateCharacter2`(
         name varchar(45),
         pass varchar(45),
         out return_val int
@@ -680,23 +638,23 @@ CREATE PROCEDURE `CreateCharacter2`(
 BEGIN
 
         declare id int;
-        
-    /* NOTE: For list of return values see kots_server.h */
+
+                /* NOTE: For list of return values see kots_server.h */
 
         if exists (select 1 from settings a where a.name = 'disable_login' and value = '1')
         then
-        
-      /* Login has been disabled */
-      set return_val = 8;
-        
+
+                        /* Login has been disabled */
+                        set return_val = 8;
+
         elseif exists (select 1 from characters a where a.name = name for update)
         then
-        
-      /* Character already exists */
-      set return_val = 5;
-        
+
+                        /* Character already exists */
+                        set return_val = 5;
+
         else
-        
+
             insert into characters (name, pass, datecreated)
             values (name, MD5(pass), NOW());
 
@@ -708,18 +666,18 @@ BEGIN
             insert into characters_stats (character_id) values (id);
             insert into characters_settings (character_id) values (id);
 
-      /* Everythign was successful */
+                        /* Everythign was successful */
             set return_val = 0;
-            
+
         end if;
 
 END
-
 $$
-CREATE PROCEDURE `DeleteAllCharacters`()
+
+CREATE OR REPLACE PROCEDURE `DeleteAllCharacters`()
 BEGIN
 
-    update kings set character_id = null;
+        update kings set character_id = null;
         delete from characters_persist;
         delete from characters_player;
         delete from characters_power;
@@ -727,12 +685,12 @@ BEGIN
         delete from characters;
 
 END
-
 $$
-CREATE PROCEDURE `DeleteCharacter`(id int)
+
+CREATE OR REPLACE PROCEDURE `DeleteCharacter`(id int)
 BEGIN
 
-    update kings set character_id = null where kings.character_id = id;
+        update kings set character_id = null where kings.character_id = id;
         delete from characters_persist where characters_player.character_id = id;
         delete from characters_player where characters_player.character_id = id;
         delete from characters_power where characters_power.character_id = id;
@@ -740,9 +698,9 @@ BEGIN
         delete from characters where characters.id = id;
 
 END
-
 $$
-CREATE PROCEDURE `Load2`(
+
+CREATE OR REPLACE PROCEDURE `Load2`(
         name varchar(45),
         out return_val bool
 )
@@ -778,65 +736,66 @@ BEGIN
                               characters_stats f on a.id = f.character_id inner join
                               characters_settings g on a.id = g.character_id
                 where         a.id = id;
-                
+
                 set return_val = 0;
         end if;
 
 END
-
 $$
-CREATE PROCEDURE `LoadIpBans`()
+
+CREATE OR REPLACE PROCEDURE `LoadIpBans`()
 BEGIN
 
         select ip_address from ipbans;
 
 END
-
 $$
-CREATE PROCEDURE `LoadMuteList`()
+
+CREATE OR REPLACE PROCEDURE `LoadMuteList`()
 BEGIN
 
         select a.ip_address, a.name, a.character_id
         from mutelist a;
 
 END
-
 $$
-CREATE PROCEDURE `LoadRunes`()
+
+CREATE OR REPLACE PROCEDURE `LoadRunes`()
 BEGIN
 
 SELECT  a.id, a.name, a.pickup_text, a.model_name, a.image_name, a.sound_name, a.effects, a.renderfx, a.rarity, a.mins, a.maxs,
-    b.dexterity, b.strength, b.karma, b.wisdom, b.technical, b.spirit, b.rage, b.vithealth, b.vitarmor, b.munition,
-    c.sabre, c.shotgun, c.supershotgun, c.machinegun, c.chaingun, c.grenade, c.grenadelauncher, c.rocketlauncher, c.hyperblaster, c.railgun, c.bfg,
-    d.expack, d.spiral, d.bide, d.throw, d.antiweapon,
-    e.tballs, e.tball_regen, e.tball_speed, e.normal_resist, e.energy_resist
-FROM  runes a inner join
-    runes_player b on a.id = b.rune_id inner join
-    runes_weapon c on a.id = c.rune_id inner join
-    runes_power d on a.id = d.rune_id inner join
-    runes_other e on a.id = e.rune_id;
+        b.dexterity, b.strength, b.karma, b.wisdom, b.technical, b.spirit, b.rage, b.vithealth, b.vitarmor, b.munition,
+        c.sabre, c.shotgun, c.supershotgun, c.machinegun, c.chaingun, c.grenade, c.grenadelauncher, c.rocketlauncher, c.hyperblaster, c.railgun, c.bfg,
+        d.expack, d.spiral, d.bide, d.throw, d.antiweapon,
+        e.tballs, e.tball_regen, e.tball_speed, e.normal_resist, e.energy_resist
+FROM    runes a inner join
+        runes_player b on a.id = b.rune_id inner join
+        runes_weapon c on a.id = c.rune_id inner join
+        runes_power d on a.id = d.rune_id inner join
+        runes_other e on a.id = e.rune_id;
 
 END
-
 $$
-CREATE PROCEDURE `LoadServers`()
+
+CREATE OR REPLACE PROCEDURE `LoadServers`()
 BEGIN
 
-  /*
-  Servers not updated for a while are considered down
-  */
-  select  name, ip_address, port, max_players, cur_players, map, hostname,
-      CASE
-        WHEN NOW() < DATE_ADD(last_updated, interval 60 minute) THEN 1
-        ELSE 0
-      END as status
-  from  `servers`
-  where is_public = 1
-  having  status = 1;
-    
+    /*
+    Servers not updated for a while are considered down
+    */
+    select  name, ip_address, port, max_players, cur_players, map, hostname,
+            CASE
+                WHEN NOW() < DATE_ADD(last_updated, interval 60 minute) THEN 1
+                ELSE 0
+            END as status
+    from    `servers`
+    where   is_public = 1
+    having  status = 1;
+
 END
 $$
-CREATE PROCEDURE `Login3`(
+
+CREATE OR REPLACE PROCEDURE `Login3`(
         name varchar(45),
         pass varchar(45),
         ip_address varchar(15),
@@ -844,101 +803,100 @@ CREATE PROCEDURE `Login3`(
 )
 BEGIN
 
-  declare title varchar(50);
+    declare title varchar(50);
     declare realpass varchar(45);
     declare id int;
     declare lastsaved datetime;
     declare isloggedin bool;
     declare allow_login bool;
 
-  if exists (select 1 from settings a where a.name = 'disable_login' and value = '1')
-  then
-  
-    /* Login has been disabled */
-    set return_val = 8;
+    if exists (select 1 from settings a where a.name = 'disable_login' and value = '1')
+    then
 
-  else
+        /* Login has been disabled */
+        set return_val = 8;
+
+    else
 
         select a.id, a.pass, a.lastsaved, a.loggedin, a.allow_login into id, realpass, lastsaved, isloggedin, allow_login
         from characters a where a.name = name limit 1 for update;
 
         if id is null
         then
-        
-      /* Character doesn't exist */
+
+            /* Character doesn't exist */
             set return_val = 2;
-                
+
         elseif (realpass <> MD5(pass))
         then
-        
+
             /* Incorrect password */
             set return_val = 3;
 
         elseif (isloggedin AND lastsaved is not null AND DATE_ADD(lastsaved, interval 10 minute) > NOW())
         then
-        
+
             /* Already logged in */
             set return_val = 4;
-            
+
         elseif not allow_login
         then
-        
-      /* Login for this character has been disabled */
-      set return_val = 8;
+
+            /* Login for this character has been disabled */
+            set return_val = 8;
 
         else
-        
-      update        characters a
-      set           loggedin = 1,
-              lastsaved = NOW()
-      where         a.id = id;
 
-      insert into   characters_history
-              (character_id, logindate, ip_address)
-      values     (id, NOW(), ip_address);
+            update        characters a
+            set           loggedin = 1,
+                            lastsaved = NOW()
+            where         a.id = id;
 
-      select        a.id, a.level, a.exp, a.resist, a.cubes, a.credits, a.rune_id, a.respawn_weapon, a.respawns, a.isadmin, a.gender, a.cursed,
-              case
-              when length(a.title) <> 0 then a.title
-              when a.gender = 'f' then h.title_female
-              else h.title_male
-              end as title,
-              b.sabre, b.shotgun, b.supershotgun, b.machinegun, b.chaingun, b.grenade, b.grenadelauncher, b.rocketlauncher, b.hyperblaster, b.railgun, b.bfg, b.weaponpoints, b.antiweapon as wantiweapon, b.weaponsbought,
-              c.dexterity, c.strength, c.karma, c.wisdom, c.technical, c.spirit, c.rage, c.vithealth, c.vitarmor, c.munition, c.playerpoints, c.playersbought,
-              d.expack, d.spiral, d.bide, d.kotsthrow, d.antiweapon, d.powerpoints, d.powersbought,
-              e.health, e.armor, e.weapon, e.persist, e.shotgun as persist_shotgun, e.supershotgun as persist_supershotgun, e.machinegun as persist_machinegun, e.chaingun as persist_chaingun, e.grenadelauncher as persist_grenadelauncher, e.rocketlauncher as persist_rocketlauncher, e.hyperblaster as persist_hyperblaster, e.railgun as persist_railgun, e.bfg as persist_bfg, e.shells, e.bullets, e.grenades, e.rockets, e.cells, e.slugs,
-              f.kills, f.killed, f.telefrags, f.twofers, f.threefers, f.highestfer, f.sprees, f.spreewars, f.spreesbroken, f.spreewarsbroken, f.longestspree, f.suicides, f.teleports, f.timeplayed, f.total_credits, f.total_packs,
-              g.highjump, g.spiritswim, g.pconvert, g.laserhook_color, g.cgconvert, a.respec_points
-      from          characters a inner join
-              characters_weapon b on a.id = b.character_id inner join
-              characters_player c on a.id = c.character_id inner join
-              characters_power d on a.id = d.character_id inner join
-              characters_persist e on a.id = e.character_id inner join
-              characters_stats f on a.id = f.character_id inner join
-              characters_settings g on a.id = g.character_id left join
-              kings h on a.king_id = h.id
-      where         a.id = id;
+            insert into        characters_history
+                            (character_id, logindate, ip_address)
+            values            (id, NOW(), ip_address);
 
-      set return_val = 0;
-        
+            select        a.id, a.level, a.exp, a.resist, a.cubes, a.credits, a.rune_id, a.respawn_weapon, a.respawns, a.isadmin, a.gender, a.cursed,
+                            case
+                            when length(a.title) <> 0 then a.title
+                            when a.gender = 'f' then h.title_female
+                            else h.title_male
+                            end as title,
+                            b.sabre, b.shotgun, b.supershotgun, b.machinegun, b.chaingun, b.grenade, b.grenadelauncher, b.rocketlauncher, b.hyperblaster, b.railgun, b.bfg, b.weaponpoints, b.antiweapon as wantiweapon, b.weaponsbought,
+                            c.dexterity, c.strength, c.karma, c.wisdom, c.technical, c.spirit, c.rage, c.vithealth, c.vitarmor, c.munition, c.playerpoints, c.playersbought,
+                            d.expack, d.spiral, d.bide, d.kotsthrow, d.antiweapon, d.powerpoints, d.powersbought,
+                            e.health, e.armor, e.weapon, e.persist, e.shotgun as persist_shotgun, e.supershotgun as persist_supershotgun, e.machinegun as persist_machinegun, e.chaingun as persist_chaingun, e.grenadelauncher as persist_grenadelauncher, e.rocketlauncher as persist_rocketlauncher, e.hyperblaster as persist_hyperblaster, e.railgun as persist_railgun, e.bfg as persist_bfg, e.shells, e.bullets, e.grenades, e.rockets, e.cells, e.slugs,
+                            f.kills, f.killed, f.telefrags, f.twofers, f.threefers, f.highestfer, f.sprees, f.spreewars, f.spreesbroken, f.spreewarsbroken, f.longestspree, f.suicides, f.teleports, f.timeplayed, f.total_credits, f.total_packs,
+                            g.highjump, g.spiritswim, g.pconvert, g.laserhook_color, g.cgconvert, a.respec_points
+            from          characters a inner join
+                            characters_weapon b on a.id = b.character_id inner join
+                            characters_player c on a.id = c.character_id inner join
+                            characters_power d on a.id = d.character_id inner join
+                            characters_persist e on a.id = e.character_id inner join
+                            characters_stats f on a.id = f.character_id inner join
+                            characters_settings g on a.id = g.character_id left join
+                            kings h on a.king_id = h.id
+            where         a.id = id;
+
+            set return_val = 0;
+
         end if;
-  end if;
-
+    end if;
 END
-
 $$
-CREATE PROCEDURE `LogInfo`(
+
+CREATE OR REPLACE PROCEDURE `LogInfo`(
         info varchar(2048)
 )
 BEGIN
 
-  insert into `log` (`date`, `info`)
-  values ( NOW(), info );
+        insert into `log` (`date`, `info`)
+        values ( NOW(), info );
 
 END
-
 $$
-CREATE PROCEDURE `MutePlayer`(
+
+CREATE OR REPLACE PROCEDURE `MutePlayer`(
         ip_address varchar(15),
         name varchar(16),
         character_id int
@@ -952,21 +910,21 @@ BEGIN
 
         if id is null
         then
-        
-        if character_id = 0
-        then
-          set character_id = 0;
-        end if;
-        
-                insert into   mutelist
-                (ip_address, name, character_id, date_muted)
-        values      (ip_address, name, character_id, NOW());
+
+                                if character_id = 0
+                                then
+                                        set character_id = 0;
+                                end if;
+
+                insert into             mutelist
+                                                                (ip_address, name, character_id, date_muted)
+                                values                  (ip_address, name, character_id, NOW());
         end if;
 
 END
-
 $$
-CREATE PROCEDURE `SaveCharacter3`(
+
+CREATE OR REPLACE PROCEDURE `SaveCharacter3`(
         id int,
         `level` int,
         exp int,
@@ -979,7 +937,7 @@ CREATE PROCEDURE `SaveCharacter3`(
         loggedin tinyint(1),
         cursed tinyint(1),
         isadmin tinyint(1),
-    respec_points int
+                respec_points int
 )
 BEGIN
 
@@ -996,13 +954,13 @@ BEGIN
                       a.loggedin = loggedin,
                       a.cursed = cursed,
                       a.isadmin = isadmin,
-            a.respec_points = respec_points
+                                          a.respec_points = respec_points
         where         a.id = id;
-        
-END
 
+END
 $$
-CREATE PROCEDURE `SavePersist`(
+
+CREATE OR REPLACE PROCEDURE `SavePersist`(
         id int,
         health int,
         armor int,
@@ -1049,9 +1007,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `SavePlayer2`(
+
+CREATE OR REPLACE PROCEDURE `SavePlayer2`(
         id int,
         dexterity int,
         strength int,
@@ -1084,9 +1042,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `SavePower2`(
+
+CREATE OR REPLACE PROCEDURE `SavePower2`(
         id int,
         expack int,
         spiral int,
@@ -1109,9 +1067,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `SaveSettings2`(
+
+CREATE OR REPLACE PROCEDURE `SaveSettings2`(
         id int,
         highjump tinyint(1),
         spiritswim tinyint(1),
@@ -1130,9 +1088,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `SaveStats2`(
+
+CREATE OR REPLACE PROCEDURE `SaveStats2`(
         id int,
         kills int,
         killed int,
@@ -1173,9 +1131,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `SaveWeapon3`(
+
+CREATE OR REPLACE PROCEDURE `SaveWeapon3`(
         id int,
         sabre int,
         shotgun int,
@@ -1212,9 +1170,9 @@ BEGIN
         where         a.character_id = id;
 
 END
-
 $$
-CREATE PROCEDURE `UnmutePlayer`(
+
+CREATE OR REPLACE PROCEDURE `UnmutePlayer`(
         ip_address varchar(15)
 )
 BEGIN
@@ -1222,188 +1180,229 @@ BEGIN
         delete from mutelist where mutelist.ip_address = ip_address;
 
 END
-
 $$
-CREATE PROCEDURE `UpdateKings`()
+
+CREATE OR REPLACE PROCEDURE `UpdateKings`()
 BEGIN
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a order by a.exp desc limit 1)
-  where id = 1;
+    update kings
+    set character_id = (select a.id from v_possible_kings a order by a.exp desc limit 1)
+    where id = 1;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.dexterity desc, a.exp desc limit 1)
-  where id = 2;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.dexterity desc, a.exp desc limit 1)
+    where id = 2;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.strength desc, a.exp desc limit 1)
-  where id = 3;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.strength desc, a.exp desc limit 1)
+    where id = 3;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.karma desc, a.exp desc limit 1)
-  where id = 4;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.karma desc, a.exp desc limit 1)
+    where id = 4;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.wisdom desc, a.exp desc limit 1)
-  where id = 5;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.wisdom desc, a.exp desc limit 1)
+    where id = 5;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.technical desc, a.exp desc limit 1)
-  where id = 6;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.technical desc, a.exp desc limit 1)
+    where id = 6;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.spirit desc, a.exp desc limit 1)
-  where id = 7;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.spirit desc, a.exp desc limit 1)
+    where id = 7;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.rage desc, a.exp desc limit 1)
-  where id = 8;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.rage desc, a.exp desc limit 1)
+    where id = 8;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.vithealth desc, a.exp desc limit 1)
-  where id = 9;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.vithealth desc, a.exp desc limit 1)
+    where id = 9;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.vitarmor desc, a.exp desc limit 1)
-  where id = 10;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.vitarmor desc, a.exp desc limit 1)
+    where id = 10;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.munition desc, a.exp desc limit 1)
-  where id = 11;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id order by b.munition desc, a.exp desc limit 1)
+    where id = 11;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.kills desc, a.exp desc limit 1)
-  where id = 12;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.kills desc, a.exp desc limit 1)
+    where id = 12;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / b.timeplayed / 60) desc, a.exp desc limit 1)
-  where id = 13;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / b.timeplayed / 60) desc, a.exp desc limit 1)
+    where id = 13;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.sprees desc, a.exp desc limit 1)
-  where id = 14;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.sprees desc, a.exp desc limit 1)
+    where id = 14;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreewars desc, a.exp desc limit 1)
-  where id = 15;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreewars desc, a.exp desc limit 1)
+    where id = 15;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreesbroken desc, a.exp desc limit 1)
-  where id = 16;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreesbroken desc, a.exp desc limit 1)
+    where id = 16;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreewarsbroken desc, a.exp desc limit 1)
-  where id = 17;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.spreewarsbroken desc, a.exp desc limit 1)
+    where id = 17;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.twofers desc, a.exp desc limit 1)
-  where id = 18;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.twofers desc, a.exp desc limit 1)
+    where id = 18;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.threefers desc, a.exp desc limit 1)
-  where id = 19;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.threefers desc, a.exp desc limit 1)
+    where id = 19;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 1 order by b.sabre desc, a.exp desc limit 1)
-  where id = 20;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 1 order by b.sabre desc, a.exp desc limit 1)
+    where id = 20;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 4 order by b.machinegun desc, a.exp desc limit 1)
-  where id = 21;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 4 order by b.machinegun desc, a.exp desc limit 1)
+    where id = 21;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 2 order by b.shotgun desc, a.exp desc limit 1)
-  where id = 22;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 2 order by b.shotgun desc, a.exp desc limit 1)
+    where id = 22;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 3 order by b.supershotgun desc, a.exp desc limit 1)
-  where id = 23;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 3 order by b.supershotgun desc, a.exp desc limit 1)
+    where id = 23;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 5 order by b.chaingun desc, a.exp desc limit 1)
-  where id = 24;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 5 order by b.chaingun desc, a.exp desc limit 1)
+    where id = 24;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 6 order by b.grenade desc, a.exp desc limit 1)
-  where id = 25;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 6 order by b.grenade desc, a.exp desc limit 1)
+    where id = 25;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 7 order by b.grenadelauncher desc, a.exp desc limit 1)
-  where id = 26;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 7 order by b.grenadelauncher desc, a.exp desc limit 1)
+    where id = 26;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 8 order by b.rocketlauncher desc, a.exp desc limit 1)
-  where id = 27;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 8 order by b.rocketlauncher desc, a.exp desc limit 1)
+    where id = 27;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 9 order by b.hyperblaster desc, a.exp desc limit 1)
-  where id = 28;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 9 order by b.hyperblaster desc, a.exp desc limit 1)
+    where id = 28;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 10 order by b.railgun desc, a.exp desc limit 1)
-  where id = 29;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 10 order by b.railgun desc, a.exp desc limit 1)
+    where id = 29;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 11 order by b.bfg desc, a.exp desc limit 1)
-  where id = 30;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where a.respawn_weapon = 11 order by b.bfg desc, a.exp desc limit 1)
+    where id = 30;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.teleports desc, a.exp desc limit 1)
-  where id = 31;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.teleports desc, a.exp desc limit 1)
+    where id = 31;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.telefrags desc, a.exp desc limit 1)
-  where id = 32;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.telefrags desc, a.exp desc limit 1)
+    where id = 32;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / (b.kills + b.killed)) desc, a.exp desc limit 1)
-  where id = 33;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / (b.kills + b.killed)) desc, a.exp desc limit 1)
+    where id = 33;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a order by a.credits desc, a.exp desc limit 1)
-  where id = 34;
+    update kings
+    set character_id = (select a.id from v_possible_kings a order by a.credits desc, a.exp desc limit 1)
+    where id = 34;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.suicides asc, a.exp desc limit 1)
-  where id = 35;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.suicides asc, a.exp desc limit 1)
+    where id = 35;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.suicides desc, a.exp desc limit 1)
-  where id = 36;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.suicides desc, a.exp desc limit 1)
+    where id = 36;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / (b.kills + b.killed)) asc, a.exp desc limit 1)
-  where id = 37;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by (b.kills / (b.kills + b.killed)) asc, a.exp desc limit 1)
+    where id = 37;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.killed desc, a.exp desc limit 1)
-  where id = 38;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_stats b on a.id = b.character_id order by b.killed desc, a.exp desc limit 1)
+    where id = 38;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id where b.dexterity < 7 and b.strength < 7 and b.karma < 7 and b.wisdom < 7 and b.technical < 7 and b.spirit < 7 and b.rage < 7 order by a.exp desc limit 1)
-  where id = 39;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_player b on a.id = b.character_id where b.dexterity < 7 and b.strength < 7 and b.karma < 7 and b.wisdom < 7 and b.technical < 7 and b.spirit < 7 and b.rage < 7 order by a.exp desc limit 1)
+    where id = 39;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where b.sabre < 6 and b.shotgun < 6 and b.supershotgun < 6 and b.machinegun < 6 and b.chaingun < 6 and b.grenade < 6 and b.grenadelauncher < 6 and b.rocketlauncher < 6 and b.hyperblaster < 6 and b.railgun < 6 and b.bfg < 6 order by a.exp desc limit 1)
-  where id = 40;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_weapon b on a.id = b.character_id where b.sabre < 6 and b.shotgun < 6 and b.supershotgun < 6 and b.machinegun < 6 and b.chaingun < 6 and b.grenade < 6 and b.grenadelauncher < 6 and b.rocketlauncher < 6 and b.hyperblaster < 6 and b.railgun < 6 and b.bfg < 6 order by a.exp desc limit 1)
+    where id = 40;
 
-  update kings
-  set character_id = (select a.id from v_possible_kings a inner join characters_power b on a.id = b.character_id where b.spiral > 0 and b.bide > 0 and b.kotsthrow > 0 and b.expack > 0 and b.antiweapon > 0 order by a.exp desc limit 1)
-  where id = 41;
+    update kings
+    set character_id = (select a.id from v_possible_kings a inner join characters_power b on a.id = b.character_id where b.spiral > 0 and b.bide > 0 and b.kotsthrow > 0 and b.expack > 0 and b.antiweapon > 0 order by a.exp desc limit 1)
+    where id = 41;
 
-  /* reset all the current kings */
-  update characters
-  set king_id = null
-  where king_id is not null;
+    /* reset all the current kings */
+    update characters
+    set king_id = null
+    where king_id is not null;
 
-  /* determine the best title for all kings */
-  update characters
-  set king_id = (select a.id from kings a where a.character_id = characters.id order by a.priority asc limit 1)
-  where id in (select character_id from kings);
+    /* determine the best title for all kings */
+    update characters
+    set king_id = (select a.id from kings a where a.character_id = characters.id order by a.priority asc limit 1)
+    where id in (select character_id from kings);
 
 END
 $$
 
+CREATE OR REPLACE PROCEDURE `UpdateServer3`(
+        name varchar(128),
+        port int(4),
+        max_players int(4),
+        cur_players int(4),
+        map varchar(64),
+        is_public tinyint
+)
+BEGIN
+
+    declare id int;
+    declare hostname varchar(256);
+    declare username varchar(128);
+
+    /* get ip address and server id if one exists */
+    select substr(user(), instr(user(), '@') + 1) into hostname;
+    select substr(user(), 1, instr(user(), '@') - 1) into username;
+    select a.id from `servers` a where a.hostname = hostname and a.port = port into id;
+
+    if id is null
+    then
+
+            insert into `servers` (name, port, max_players, cur_players, map, username, last_updated, is_public, hostname)
+            values (name, port, max_players, cur_players, map, username, NOW(), is_public, hostname);
+
+    else
+
+            update  `servers`
+            set     servers.name = name,
+                    servers.max_players = max_players,
+                    servers.cur_players = cur_players,
+                    servers.map = map,
+                    servers.username = username,
+                    servers.is_public = is_public,
+                    servers.last_updated = NOW()
+            where   servers.id = id;
+
+    end if;
+
+END
+$$
 --
 DELIMITER ;
 --
