@@ -181,7 +181,7 @@ int Kots_HudScoreboardMainTitle(char *entry, int size)
 
     //print the title
     Com_sprintf (entry, size,
-        "xv 0 yv 0 string2 \"  KOTS2007              Time: %02i:%02i\" ",
+        "xv 0 yv 0 string2 \"  KOTS2024              Time: %02i:%02i\" ",
         (time_remaining > 0 ? time_remaining / 60 : 0),
         (time_remaining > 0 ? time_remaining % 60 : 0));
 

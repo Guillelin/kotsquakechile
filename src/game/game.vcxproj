@@ -150,6 +150,10 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Static Linking|Win32'">..\$(Configuration)\</OutDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Linking|Win32'">gamex86</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>gcc -o $(OutDir)\$(TargetName).so $(ProjectDir)\*.c</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>del /f $(OutDir)\$(TargetName).so</NMakeCleanCommandLine>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
       <Command>

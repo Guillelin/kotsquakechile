@@ -40,7 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "p_menu.h"
 
 // the "gameversion" client command will print this plus compile date
-#define GAMEVERSION "kots2007"
+#define GAMEVERSION "kots2024"
 
 // protocol bytes that can be directly added to messages
 #define svc_muzzleflash     1
