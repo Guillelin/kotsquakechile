@@ -362,3 +362,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /src/game/Debug_Official
 /src/game/Release_Official/game.tlog
+/src/game/kots_server.h
