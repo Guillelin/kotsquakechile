@@ -23,38 +23,38 @@ int Kots_CharacterGetNextLevelExp(int level)
 {
     switch (level)
     {
-    case 0:
-        return 500 / KOTS_EXP_MULTIPLY;
-    case 1:
-        return 1000 / KOTS_EXP_MULTIPLY;
-    case 2:
-        return 2000 / KOTS_EXP_MULTIPLY;
-    case 3:
-        return 4000 / KOTS_EXP_MULTIPLY;
-    case 4:
-        return 8000 / KOTS_EXP_MULTIPLY;
-    case 5:
-        return 16000 / KOTS_EXP_MULTIPLY;
-    case 6:
-        return 32000 / KOTS_EXP_MULTIPLY;
-    case 7:
-        return 60000 / KOTS_EXP_MULTIPLY;
-    case 8:
-        return 100000 / KOTS_EXP_MULTIPLY;
-    case 9:
-        return 150000 / KOTS_EXP_MULTIPLY;
-    case 10:
-        return 200000 / KOTS_EXP_MULTIPLY;
-    case 11:
-        return 275000 / KOTS_EXP_MULTIPLY;
-    case 12:
-        return 350000 / KOTS_EXP_MULTIPLY;
-    case 13:
-        return 425000 / KOTS_EXP_MULTIPLY;
-    case 14:
-        return 500000 / KOTS_EXP_MULTIPLY;
-    default:
-        return 100000 * (level - 9) / KOTS_EXP_MULTIPLY;
+        case 0:
+            return 500;
+        case 1:
+            return 1000;
+        case 2:
+            return 3000;
+        case 3:
+            return 6000;
+        case 4:
+            return 10000;
+        case 5:
+            return 15000;
+        case 6:
+            return 21000;
+        case 7:
+            return 28000;
+        case 8:
+            return 36000;
+        case 9:
+            return 45000;
+        case 10:
+            return 55000;
+        case 11:
+            return 65000;
+        case 12:
+            return 75000;
+        case 13:
+            return 85000;
+        case 14:
+            return 95000;
+        default:
+            return 100000;
     }
 }
 

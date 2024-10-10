@@ -1,10 +1,14 @@
+-- phpMyAdmin SQL Dump
+-- version 2.11.2.1
+-- http://www.phpmyadmin.net
 --
--- DMP MySQL - One Click
--- 2024-09-24 Modified by Guillermo Díaz L (Tesla)
---
-CREATE DATABASE kots;
+-- Generation Time: Jun 02, 2008 at 09:18 PM
+-- Server version: 5.0.24
+-- PHP Version: 4.4.7
 
-USE kots;
+CREATE DATABASE KOTS;
+
+USE KOTS;
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 
@@ -556,7 +560,9 @@ ALTER TABLE `mutelist`
 -- Procedures
 -- 2024-09-23 Modified by Guillermo Díaz L (Tesla)
 --
-CREATE PROCEDURE `AdminLogin`(
+DELIMITER $$
+
+CREATE OR REPLACE PROCEDURE `AdminLogin`(
         name varchar(45),
         pass varchar(45),
         ip_address varchar(15),
@@ -600,9 +606,10 @@ BEGIN
                 /* TODO: Possibly add some logging in here */
         end if;
 
-END;
+END 
+$$
 
-CREATE PROCEDURE `BanIp`(
+CREATE OR REPLACE PROCEDURE `BanIp`(
         ip_address varchar(15),
         description varchar(512)
 )
@@ -620,9 +627,10 @@ BEGIN
                                 values                  (ip_address, NOW(), description);
         end if;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `CreateCharacter2`(
+CREATE OR REPLACE PROCEDURE `CreateCharacter2`(
         name varchar(45),
         pass varchar(45),
         out return_val int
@@ -663,9 +671,10 @@ BEGIN
 
         end if;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `DeleteAllCharacters`()
+CREATE OR REPLACE PROCEDURE `DeleteAllCharacters`()
 BEGIN
 
         update kings set character_id = null;
@@ -675,9 +684,10 @@ BEGIN
         delete from characters_weapon;
         delete from characters;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `DeleteCharacter`(id int)
+CREATE OR REPLACE PROCEDURE `DeleteCharacter`(id int)
 BEGIN
 
         update kings set character_id = null where kings.character_id = id;
@@ -687,9 +697,10 @@ BEGIN
         delete from characters_weapon where characters_weapon.character_id = id;
         delete from characters where characters.id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `Load2`(
+CREATE OR REPLACE PROCEDURE `Load2`(
         name varchar(45),
         out return_val bool
 )
@@ -729,24 +740,27 @@ BEGIN
                 set return_val = 0;
         end if;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `LoadIpBans`()
+CREATE OR REPLACE PROCEDURE `LoadIpBans`()
 BEGIN
 
         select ip_address from ipbans;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `LoadMuteList`()
+CREATE OR REPLACE PROCEDURE `LoadMuteList`()
 BEGIN
 
         select a.ip_address, a.name, a.character_id
         from mutelist a;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `LoadRunes`()
+CREATE OR REPLACE PROCEDURE `LoadRunes`()
 BEGIN
 
 SELECT  a.id, a.name, a.pickup_text, a.model_name, a.image_name, a.sound_name, a.effects, a.renderfx, a.rarity, a.mins, a.maxs,
@@ -760,9 +774,10 @@ FROM    runes a inner join
         runes_power d on a.id = d.rune_id inner join
         runes_other e on a.id = e.rune_id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `LoadServers`()
+CREATE OR REPLACE PROCEDURE `LoadServers`()
 BEGIN
 
     /*
@@ -777,9 +792,10 @@ BEGIN
     where   is_public = 1
     having  status = 1;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `Login3`(
+CREATE OR REPLACE PROCEDURE `Login3`(
         name varchar(45),
         pass varchar(45),
         ip_address varchar(15),
@@ -866,9 +882,10 @@ BEGIN
 
         end if;
     end if;
-END;
+END
+$$
 
-CREATE PROCEDURE `LogInfo`(
+CREATE OR REPLACE PROCEDURE `LogInfo`(
         info varchar(2048)
 )
 BEGIN
@@ -876,9 +893,10 @@ BEGIN
         insert into `log` (`date`, `info`)
         values ( NOW(), info );
 
-END;
+END
+$$
 
-CREATE PROCEDURE `MutePlayer`(
+CREATE OR REPLACE PROCEDURE `MutePlayer`(
         ip_address varchar(15),
         name varchar(16),
         character_id int
@@ -903,9 +921,10 @@ BEGIN
                                 values                  (ip_address, name, character_id, NOW());
         end if;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SaveCharacter3`(
+CREATE OR REPLACE PROCEDURE `SaveCharacter3`(
         id int,
         `level` int,
         exp int,
@@ -938,9 +957,10 @@ BEGIN
                                           a.respec_points = respec_points
         where         a.id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SavePersist`(
+CREATE OR REPLACE PROCEDURE `SavePersist`(
         id int,
         health int,
         armor int,
@@ -986,9 +1006,10 @@ BEGIN
                       a.persist = persist
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SavePlayer2`(
+CREATE OR REPLACE PROCEDURE `SavePlayer2`(
         id int,
         dexterity int,
         strength int,
@@ -1020,9 +1041,10 @@ BEGIN
                       a.playerpoints = playerpoints
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SavePower2`(
+CREATE OR REPLACE PROCEDURE `SavePower2`(
         id int,
         expack int,
         spiral int,
@@ -1044,9 +1066,10 @@ BEGIN
                       a.powerpoints = powerpoints
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SaveSettings2`(
+CREATE OR REPLACE PROCEDURE `SaveSettings2`(
         id int,
         highjump tinyint(1),
         spiritswim tinyint(1),
@@ -1064,9 +1087,10 @@ BEGIN
                       a.cgconvert = cgconvert
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SaveStats2`(
+CREATE OR REPLACE PROCEDURE `SaveStats2`(
         id int,
         kills int,
         killed int,
@@ -1106,9 +1130,10 @@ BEGIN
                       a.total_packs = total_packs
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `SaveWeapon3`(
+CREATE OR REPLACE PROCEDURE `SaveWeapon3`(
         id int,
         sabre int,
         shotgun int,
@@ -1144,18 +1169,20 @@ BEGIN
                       a.weaponpoints = weaponpoints
         where         a.character_id = id;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `UnmutePlayer`(
+CREATE OR REPLACE PROCEDURE `UnmutePlayer`(
         ip_address varchar(15)
 )
 BEGIN
 
         delete from mutelist where mutelist.ip_address = ip_address;
 
-END;
+END
+$$
 
-CREATE PROCEDURE `UpdateKings`()
+CREATE OR REPLACE PROCEDURE `UpdateKings`()
 BEGIN
 
     update kings
@@ -1332,9 +1359,10 @@ BEGIN
     set king_id = (select a.id from kings a where a.character_id = characters.id order by a.priority asc limit 1)
     where id in (select character_id from kings);
 
-END;
+END
+$$
 
-CREATE PROCEDURE `UpdateServer3`(
+CREATE OR REPLACE PROCEDURE `UpdateServer3`(
         name varchar(128),
         port int(4),
         max_players int(4),
@@ -1373,9 +1401,20 @@ BEGIN
 
     end if;
 
-END;
+END
+$$
+--
+DELIMITER ;
+--
 
-
+-- phpMyAdmin SQL Dump
+-- version 2.11.2.1
+-- http://www.phpmyadmin.net
+--
+-- Host: kots.ihasacrayon.net
+-- Generation Time: Jun 02, 2008 at 09:36 PM
+-- Server version: 5.0.24
+-- PHP Version: 4.4.7
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 

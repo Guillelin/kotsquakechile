@@ -54,6 +54,7 @@ qboolean Kots_PackPickup(edict_t *pack, edict_t *ent)
     }
     else
     {
+        pack->pack->credits = (pack->pack->credits * KOTS_CREDIT_MULTIPLY);
         ent->character->credits += pack->pack->credits;
         ent->character->total_credits += pack->pack->credits;
         ent->character->level_credits += pack->pack->credits;
@@ -141,6 +142,7 @@ edict_t *Kots_PackDrop(edict_t *targ, edict_t *attacker)
         //monsters give fewer credits
         pack->pack->credits = (targ->character->level / 6) + 1;
         if (pack->pack->credits > 2)
+            //TESLA 2024-10-01: Aumentan los créditos a 3 - Monsters
             pack->pack->credits = 2;
 
         pack->pack->shells = (Kots_RandRound(0.50) ? 10 : 0);

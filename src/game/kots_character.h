@@ -69,9 +69,17 @@ typedef enum {
 
 //define experience constants
 #define KOTS_EXP_BASE               15
-#define KOTS_MONSTER_EXP_BASE       3
-#define KOTS_MONSTER_EXP_MIN        1
-#define KOTS_MONSTER_EXP_MAX        6
+
+//EXP BASE ORIGINAL
+//#define KOTS_MONSTER_EXP_BASE       3
+//#define KOTS_MONSTER_EXP_MIN        1
+//#define KOTS_MONSTER_EXP_MAX        6
+
+//(2024/10/01) TESLA: Se modifica EXP Base de los MONSTER (PVM) 
+#define KOTS_MONSTER_EXP_BASE       15
+#define KOTS_MONSTER_EXP_MIN        5
+#define KOTS_MONSTER_EXP_MAX        30
+
 #define KOTS_EXP_MIN                5
 #define KOTS_EXP_MAX                500
 #define KOTS_EXP_BREAK_BONUS        2.5
@@ -90,8 +98,8 @@ typedef enum {
 
 #ifndef KOTS_OFFICIAL
  //define experience multiplication constants
- #define KOTS_EXP_MULTIPLY           50
- #define KOTS_CREDIT_MULTIPLY        50
+ #define KOTS_EXP_MULTIPLY           3
+ #define KOTS_CREDIT_MULTIPLY        2
 #endif
 
 #define KOTS_ENABLE_MAX_WEAPON_SKILL    0
