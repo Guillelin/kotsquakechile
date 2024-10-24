@@ -50,7 +50,7 @@ qboolean Kots_PackPickup(edict_t *pack, edict_t *ent)
         ent->character->credits += 1;
         ent->character->total_credits += 1;
         ent->character->level_credits += 1;
-        gi.cprintf(ent, PRINT_HIGH, "You picked up your own pack containing 10 credits.\n");
+        gi.cprintf(ent, PRINT_HIGH, "You picked up your own pack containing %i credits.\n", ent->character->credits);
     }
     else
     {

@@ -21,6 +21,9 @@ static int CheckArmor (edict_t *ent, vec3_t point, vec3_t normal, int damage, in
 
 int Kots_CharacterGetNextLevelExp(int level)
 {
+    if (level < 0)
+        return 500;
+
     switch (level)
     {
         case 0:
@@ -28,35 +31,30 @@ int Kots_CharacterGetNextLevelExp(int level)
         case 1:
             return 1000;
         case 2:
-            return 3000;
+            return 2000;
         case 3:
-            return 6000;
+            return 4000;
         case 4:
-            return 10000;
+            return 8000;
+
         case 5:
-            return 15000;
+            return 16000;
         case 6:
-            return 21000;
+            return 32000;
         case 7:
-            return 28000;
+            return 64000;
         case 8:
-            return 36000;
-        case 9:
-            return 45000;
-        case 10:
-            return 55000;
-        case 11:
-            return 65000;
-        case 12:
-            return 75000;
-        case 13:
-            return 85000;
-        case 14:
-            return 95000;
-        default:
             return 100000;
+        case 9:
+            return 150000;
+        case 10:
+            return 200000;
+
+        default:
+            return 200000 + ((level - 10) * 50000);
     }
 }
+
 
 int Kots_CharacterGetDamageExp(edict_t *attacker, edict_t *target, int damage)
 {
